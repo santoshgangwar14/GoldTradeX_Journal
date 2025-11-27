@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GoldTradeX Journal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111;
+      color: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: min(900px, 100vw - 20px);
+      height: min(620px, 100vh - 20px);
+      background: #181818;
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #333;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #333;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #f5c542;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+    }
+
+    .page-info {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      background: #262626;
+      color: #f5f5f5;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    button:hover { background: #333; }
+    button.primary {
+      background: #f5c542;
+      color: #111;
+      font-weight: 600;
+    }
+    button.primary:hover { background: #ffd45f; }
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .book {
+      flex: 1;
+      margin-top: 4px;
+      background: #111;
+      border-radius: 14px;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 10px;
+    }
+
+    .sidebar {
+      border-right: 1px solid #262626;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .page-list { flex: 1; overflow-y: auto; }
+
+    .page-item {
+      font-size: 0.8rem;
+      padding: 4px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .page-item span { opacity: 0.9; }
+    .page-item small {
+      opacity: 0.6;
+      font-size: 0.7rem;
+    }
+    .page-item.active {
+      background: #f5c542;
+      color: #111;
+      font-weight: 600;
+    }
+    .page-item:hover:not(.active) { background: #222; }
+
+    .page {
+      padding-left: 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 6px;
+    }
+
+    .row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: #bbb;
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .field label {
+      opacity: 0.8;
+      font-size: 0.78rem;
+    }
+
+    .field input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid #333;
+      color: #f5f5f5;
+      padding: 2px 4px;
+      font-size: 0.8rem;
+      min-width: 70px;
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: #f5c542;
+    }
+
+    .flex-2 { flex: 2 1 140px; }
+    .flex-1 { flex: 1 1 90px; }
+
+    textarea {
+      width: 100%;
+      resize: none;
+      border: none;
+      outline: none;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background:
+        linear-gradient(#222 1px, transparent 1px) repeat-y;
+      background-size: 100% 22px;
+      background-color: #121212;
+      color: #f5f5f5;
+      font-size: 0.86rem;
+      line-height: 22px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .notes-wrapper {
+      display: grid;
+      grid-template-columns: minmax(0,1.3fr) minmax(0,1fr);
+      gap: 6px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .section-title {
+      font-size: 0.74rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.65;
+      margin-bottom: 2px;
+    }
+
+    .chart-box {
+      background: #121212;
+      border-radius: 10px;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .chart-input {
+      width: 100%;
+      background: #181818;
+      border-radius: 6px;
+      border: 1px solid #333;
+      color: #eee;
+      font-size: 0.78rem;
+      padding: 4px 6px;
+    }
+
+    .chart-input:focus {
+      outline: none;
+      border-color: #f5c542;
+    }
+
+    .chart-preview {
+      flex: 1;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px dashed #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #777;
+      background: #0c0c0c;
+    }
+
+    .chart-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .footer {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      text-align: right;
+      opacity: 0.6;
+    }
+
+    @media (max-width: 820px) {
+      .notes-wrapper {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .book {
+        grid-template-columns: 1fr;
+      }
+      .sidebar {
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid #262626;
+        padding-right: 0;
+        padding-bottom: 6px;
+        overflow-x: auto;
+      }
+      .page-list {
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+      }
+      .page-item { white-space: nowrap; }
+      .page { padding-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="app-header">
+      <div>
+        <div class="brand">GOLDTRADEX JOURNAL</div>
+        <div class="page-info" id="pageInfo">Page 1 of 1</div>
+      </div>
+      <div class="controls">
+        <button id="prevBtn">◀ Prev</button>
+        <button id="nextBtn">Next ▶</button>
+        <button class="primary" id="addPageBtn">+ New Page</button>
+      </div>
+    </div>
+
+    <div class="book">
+      <div class="sidebar">
+        <div class="sidebar-title">Pages</div>
+        <div class="page-list" id="pageList"></div>
+      </div>
+
+      <div class="page">
+        <!-- Row 1: Basic info -->
+        <div class="row">
+          <div class="field flex-1">
+            <label>Date:</label>
+            <input id="dateInput" placeholder="YYYY-MM-DD">
+          </div>
+          <div class="field flex-1">
+            <label>Pair:</label>
+            <input id="pairInput" placeholder="XAUUSD">
+          </div>
+          <div class="field flex-1">
+            <label>Session:</label>
+            <input id="sessionInput" placeholder="London/NY">
+          </div>
+        </div>
+
+        <!-- Row 2: Entry / SL / Exit -->
+        <div class="row">
+          <div class="field flex-1">
+            <label>Entry:</label>
+            <input id="entryInput" placeholder="4050.00">
+          </div>
+          <div class="field flex-1">
+            <label>SL:</label>
+            <input id="slInput" placeholder="4044.00">
+          </div>
+          <div class="field flex-1">
+            <label>Exit / TP:</label>
+            <input id="exitInput" placeholder="4065.00">
+          </div>
+          <div class="field flex-1">
+            <label>R:R:</label>
+            <input id="rrInput" placeholder="1:6">
+          </div>
+        </div>
+
+        <!-- Notes + Chart -->
+        <div class="notes-wrapper">
+          <div class="notes-left">
+            <div class="section-title">Setup & Execution Notes</div>
+            <textarea id="pageContent"
+              placeholder="1) Setup type (liquidity sweep, CHOCH, BOS)...&#10;2) Entry trigger & confirmation...&#10;3) Management rules (BE, partials)..."></textarea>
+
+            <div class="section-title" style="margin-top:4px;">Emotions & Post-Trade Review</div>
+            <textarea id="reviewContent"
+              placeholder="Yahan likho trade ke time kya feel hua, discipline follow hua ya nahi, next time kya improve karna hai..."></textarea>
+          </div>
+
+          <div class="chart-box">
+            <div>
+              <div class="section-title">Chart Image Link</div>
+              <input
+                id="chartUrlInput"
+                class="chart-input"
+                placeholder="TradingView / MT4 screenshot ka URL yahan paste karo" />
+            </div>
+            <div class="chart-preview" id="chartPreview">
+              <span>No chart yet — link paste karo aur preview dekh sakte ho.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Auto-saved locally • Your notes stay in your browser (localStorage)
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "goldtradex_journal_pages_v2";
+
+    let pages = [];
+    let currentPage = 0;
+
+    function blankPage() {
+      const today = new Date().toISOString().slice(0, 10);
+      return {
+        id: Date.now() + Math.random(),
+        date: today,
+        pair: "",
+        session: "",
+        entry: "",
+        sl: "",
+        exit: "",
+        rr: "",
+        content: "",
+        review: "",
+        chartUrl: ""
+      };
+    }
+
+    function loadPages() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          pages = JSON.parse(stored);
+        } catch {
+          pages = [];
+        }
+      }
+      if (pages.length === 0) {
+        pages.push(blankPage());
+      }
+    }
+
+    function savePages() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(pages));
+      renderSidebar();
+    }
+
+    function saveCurrentPageState() {
+      const p = pages[currentPage];
+      p.date = document.getElementById("dateInput").value;
+      p.pair = document.getElementById("pairInput").value;
+      p.session = document.getElementById("sessionInput").value;
+      p.entry = document.getElementById("entryInput").value;
+      p.sl = document.getElementById("slInput").value;
+      p.exit = document.getElementById("exitInput").value;
+      p.rr = document.getElementById("rrInput").value;
+      p.content = document.getElementById("pageContent").value;
+      p.review = document.getElementById("reviewContent").value;
+      p.chartUrl = document.getElementById("chartUrlInput").value;
+      savePages();
+      renderChartPreview();
+    }
+
+    function renderSidebar() {
+      const list = document.getElementById("pageList");
+      list.innerHTML = "";
+      pages.forEach((p, idx) => {
+        const item = document.createElement("div");
+        item.className = "page-item" + (idx === currentPage ? " active" : "");
+        const title = p.pair || `Page ${idx + 1}`;
+        item.innerHTML = `<span>${idx + 1}. ${title}</span><small>${p.date || ""}</small>`;
+        item.onclick = () => goToPage(idx);
+        list.appendChild(item);
+      });
+      document.getElementById("pageInfo").textContent =
+        `Page ${currentPage + 1} of ${pages.length}`;
+      document.getElementById("prevBtn").disabled = currentPage === 0;
+      document.getElementById("nextBtn").disabled = currentPage === pages.length - 1;
+    }
+
+    function renderChartPreview() {
+      const box = document.getElementById("chartPreview");
+      const url = document.getElementById("chartUrlInput").value.trim();
+      if (!url) {
+        box.innerHTML = '<span>No chart yet — link paste karo aur preview dekh sakte ho.</span>';
+        return;
+      }
+      box.innerHTML = "";
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "Chart Preview";
+      img.onerror = () => {
+        box.innerHTML = "<span>Image load nahi ho paayi. URL check karo.</span>";
+      };
+      box.appendChild(img);
+    }
+
+    function renderCurrentPage() {
+      const p = pages[currentPage];
+      document.getElementById("dateInput").value = p.date || "";
+      document.getElementById("pairInput").value = p.pair || "";
+      document.getElementById("sessionInput").value = p.session || "";
+      document.getElementById("entryInput").value = p.entry || "";
+      document.getElementById("slInput").value = p.sl || "";
+      document.getElementById("exitInput").value = p.exit || "";
+      document.getElementById("rrInput").value = p.rr || "";
+      document.getElementById("pageContent").value = p.content || "";
+      document.getElementById("reviewContent").value = p.review || "";
+      document.getElementById("chartUrlInput").value = p.chartUrl || "";
+      renderSidebar();
+      renderChartPreview();
+    }
+
+    function goToPage(idx) {
+      if (idx < 0 || idx >= pages.length) return;
+      saveCurrentPageState();
+      currentPage = idx;
+      renderCurrentPage();
+    }
+
+    function addPage() {
+      saveCurrentPageState();
+      pages.push(blankPage());
+      currentPage = pages.length - 1;
+      savePages();
+      renderCurrentPage();
+    }
+
+    document.getElementById("prevBtn").onclick = () => goToPage(currentPage - 1);
+    document.getElementById("nextBtn").onclick = () => goToPage(currentPage + 1);
+    document.getElementById("addPageBtn").onclick = addPage;
+
+    [
+      "dateInput", "pairInput", "sessionInput",
+      "entryInput", "slInput", "exitInput", "rrInput",
+      "pageContent", "reviewContent", "chartUrlInput"
+    ].forEach(id => {
+      document.getElementById(id).addEventListener("input", () => {
+        saveCurrentPageState();
+      });
+    });
+
+    loadPages();
+    renderCurrentPage();
+  </script>
+</body>
+</html>
